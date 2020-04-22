@@ -1,5 +1,5 @@
-// import AppError from '../errors/AppError';
 import { getCustomRepository, getRepository } from 'typeorm';
+import AppError from '../errors/AppError';
 
 import Transaction from '../models/Transaction';
 import Category from '../models/Category';
@@ -22,6 +22,12 @@ class CreateTransactionService {
   }: Request): Promise<Transaction> {
     const repositoryTransaction = getCustomRepository(TransactionRepository);
     const repositoryCategory = getRepository(Category);
+
+    const { total } = await repositoryTransaction.getBalance();
+
+    if (type === 'outcome' && total < value) {
+      throw new AppError('You do not have enought Balance');
+    }
 
     // verificar se categoria já existe
     let transactionCategory = await repositoryCategory.findOne({
